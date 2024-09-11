@@ -1,0 +1,18 @@
+services:
+  fastapi-app:
+    build: .
+    image: llm-benchmark-image
+    container_name: fastapi-container
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis  # Redis hostname as service name
+      - REDIS_PORT=6379
+
+  redis:
+    image: "redis:alpine"
+    container_name: redis-container
+    ports:
+      - "6379:6379"
