@@ -51,3 +51,4 @@ def simulate_data(db: Session = Depends(get_db)):
     FastAPICache.clear()
     return {"message": "Simulation data generated"}
 app.mount("/frontend", StaticFiles(directory="frontend_build", html=True), name="frontend")
+app.mount("/static", StaticFiles(directory="frontend_build/static"), name="static")
