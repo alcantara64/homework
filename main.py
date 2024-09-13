@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from database import get_db, init_db
 from models import LLMPerformance
-from helpers import rank_llms
+from helpers import queue_task, rank_llms
 from  simulator import generate_simulation_data
 from fastapi_cache.backends.redis import RedisBackend
 import aioredis
@@ -39,7 +39,7 @@ def get_ranked_llms(metric_name: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Metric not found")
     return rank_llms(llms)
 
-@app.get("/api/simulate")
+
 def simulate_data(db: Session = Depends(get_db)):
     data = generate_simulation_data()
 
@@ -50,5 +50,12 @@ def simulate_data(db: Session = Depends(get_db)):
     # Invalidating cache when data is saved to db
     FastAPICache.clear()
     return {"message": "Simulation data generated"}
+
+@app.get("/api/simulate")
+def get_simulated_data():
+    task_data = {"task":"simulate_data", "param":"{}" }
+    queue_task(task_data)
+    return {"message": "Task has been queued "}
+
 app.mount("/frontend", StaticFiles(directory="frontend_build", html=True), name="frontend")
 app.mount("/static", StaticFiles(directory="frontend_build/static"), name="static")
