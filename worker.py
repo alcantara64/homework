@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from tenacity import retry, wait_fixed, stop_after_attempt
 from main import simulate_data, get_ranked_llms
+from loggingconfig import logger
 
 # RabbitMQ connection parameters
 rabbitmq_host = os.getenv("RABBITMQ_HOST", "localhost")
@@ -22,14 +23,14 @@ class Task(ABC):
 
 class SimulateDataTask(Task):
     def execute(self, db: Session, params: dict):
-        print("Executing Simulate Data Task")
+        logger.info("Executing Simulate Data Task")
         simulate_data(db)
 
 
 class RankLLMTask(Task):
     def execute(self, db: Session, params: dict):
         metric_name = params.get('metric_name')
-        print(f"Executing Rank LLMs Task for metric {metric_name}")
+        logger.info(f"Executing Rank LLMs Task for metric {metric_name}")
         get_ranked_llms(db, metric_name)
 
 
@@ -73,10 +74,10 @@ class RabbitMQConsumer:
 
         try:
             self.task_executor.execute_task(task_name, db, params)
-            print(f"Task {task_name} processed successfully")
+            logger.info(f"Task {task_name} processed successfully")
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
-            print(f"Error processing task {task_name}: {e}")
+            logger.error(f"Error processing task {task_name}: {e}")
 
     def consume_queue(self):
         """Consume tasks from RabbitMQ."""
@@ -87,7 +88,7 @@ class RabbitMQConsumer:
         channel.basic_qos(prefetch_count=1)  # Fair dispatch
         channel.basic_consume(queue=self.queue, on_message_callback=self.process_task)
 
-        print("Waiting for tasks. To exit, press CTRL+C")
+        logger.info("Waiting for tasks. To exit, press CTRL+C")
         channel.start_consuming()
 
 

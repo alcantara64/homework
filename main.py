@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from database import get_db, init_db
 from models import LLMPerformance
+from loggingconfig import logger
 from helpers import queue_task, rank_llms
 from  simulator import generate_simulation_data
 from fastapi_cache.backends.redis import RedisBackend
@@ -36,6 +37,7 @@ async def startup():
 def get_ranked_llms(metric_name: str, db: Session = Depends(get_db)):
     llms = db.query(LLMPerformance).filter(LLMPerformance.metric_name == metric_name).all()
     if not llms:
+        logger.error(f"Metric {metric_name} not found, {llms}")
         raise HTTPException(status_code=404, detail="Metric not found")
     return rank_llms(llms)
 
