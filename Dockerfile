@@ -17,7 +17,7 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-COPY --from=frontend-build /app/frontend/build /app/frontend_build
+COPY --from=frontend-build /app/frontend/build /app/frontend/build
 
 RUN pip install --no-cache-dir -r requirements.txt
 
