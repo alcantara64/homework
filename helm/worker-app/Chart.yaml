@@ -1,0 +1,8 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/alcantara64/worker-app
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+resources: {}
